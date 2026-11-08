@@ -4,7 +4,6 @@ name: Build-iOS
 
 on:
   workflow_dispatch:
-    inputs:
 
 env:
   CLOJURE_VERSION: '1.11.1.1413'

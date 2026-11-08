@@ -56,7 +56,7 @@ jobs:
           cli: ${{ env.CLOJURE_VERSION }}
 
       - name: Fetch yarn deps
-        run: yarn cache clean && yarn install --frozen-lockfile --frozen-lockfile
+        run: yarn cache clean && yarn install --frozen-lockfile
 
       - name: Build Released-Web
         run: |

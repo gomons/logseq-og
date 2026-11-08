@@ -61,7 +61,7 @@ jobs:
           bb: ${{ env.BABASHKA_VERSION }}
 
       - name: Fetch yarn deps
-        run: yarn install --frozen-lockfile --frozen-lockfile
+        run: yarn install --frozen-lockfile
 
       # In this job because it depends on an npm package
       - name: Load namespaces into nbb-logseq
