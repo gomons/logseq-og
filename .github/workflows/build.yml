@@ -17,31 +17,42 @@ env:
   NODE_VERSION: '22'
   BABASHKA_VERSION: '1.0.168'
 
+permissions:
+  contents: read
+
 jobs:
   typos:
+    if: ${{ github.repository == 'gomons/logseq-og' && github.actor == 'gomons' && github.triggering_actor == 'gomons' }}
     name: Spell Check with Typos
+    timeout-minutes: 60
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout Actions Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - name: Check spelling with custom config file
-        uses: crate-ci/typos@v1.16.8
+        uses: crate-ci/typos@e477391cc0243daaeeb154a7bfa67cb7d6fc5831 # v1.16.8
         with:
           config: ./typos.toml
 
   test:
+    if: ${{ github.repository == 'gomons/logseq-og' && github.actor == 'gomons' && github.triggering_actor == 'gomons' }}
     strategy:
       matrix:
         operating-system: [ubuntu-22.04]
 
+    timeout-minutes: 60
     runs-on: ${{ matrix.operating-system }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'yarn'
@@ -50,18 +61,18 @@ jobs:
             static/yarn.lock
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: 'zulu'
           java-version: ${{ env.JAVA_VERSION }}
 
       - name: Set up Clojure
-        uses: DeLaGuardo/setup-clojure@10.1
+        uses: DeLaGuardo/setup-clojure@1376ded6747c79645e82c856f16375af5f5de307 # 10.1
         with:
           cli: ${{ env.CLOJURE_VERSION }}
 
       - name: Clojure cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         id: clojure-deps
         with:
           path: |
@@ -83,20 +94,24 @@ jobs:
           node static/tests.js
 
   lint:
+    if: ${{ github.repository == 'gomons/logseq-og' && github.actor == 'gomons' && github.triggering_actor == 'gomons' }}
+    timeout-minutes: 60
     runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  #v3
+        with:
+          persist-credentials: false
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: 'zulu'
           java-version: ${{ env.JAVA_VERSION }}
 
       - name: Set up Clojure
-        uses: DeLaGuardo/setup-clojure@10.1
+        uses: DeLaGuardo/setup-clojure@1376ded6747c79645e82c856f16375af5f5de307 # 10.1
         with:
           cli: ${{ env.CLOJURE_VERSION }}
           bb: ${{ env.BABASHKA_VERSION }}
@@ -117,14 +132,18 @@ jobs:
         run: bb lang:validate-translations
 
   e2e-test:
+    if: ${{ github.repository == 'gomons/logseq-og' && github.actor == 'gomons' && github.triggering_actor == 'gomons' }}
+    timeout-minutes: 60
     runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'yarn'
@@ -133,18 +152,18 @@ jobs:
             static/yarn.lock
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: 'zulu'
           java-version: ${{ env.JAVA_VERSION }}
 
       - name: Set up Clojure
-        uses: DeLaGuardo/setup-clojure@10.1
+        uses: DeLaGuardo/setup-clojure@1376ded6747c79645e82c856f16375af5f5de307 # 10.1
         with:
           cli: ${{ env.CLOJURE_VERSION }}
 
       - name: Clojure cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         id: clojure-deps
         with:
           path: |
@@ -158,7 +177,7 @@ jobs:
         run: clojure -A:cljs -P
 
       - name: Shadow-cljs cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: .shadow-cljs
           # ensure update cache every time
@@ -168,7 +187,7 @@ jobs:
             ${{ runner.os }}-shadow-cljs-
 
       - name: Fetch yarn deps
-        run: yarn install
+        run: yarn install --frozen-lockfile
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: true
 
@@ -176,7 +195,7 @@ jobs:
       - name: Prepare E2E test build
         run: |
           yarn gulp:build && clojure -M:cljs compile app publishing electron
-          (cd static && yarn install && yarn rebuild:all)
+          (cd static && yarn install --frozen-lockfile && yarn rebuild:all)
 
       # Exits with 0 if yarn.lock is up to date or 1 if we forgot to update it
       - name: Ensure static yarn.lock is up to date
@@ -209,7 +228,7 @@ jobs:
 
       - name: Save test artifacts
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: e2e-test-report
           path: e2e-dump/*

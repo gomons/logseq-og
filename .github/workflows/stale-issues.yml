@@ -17,6 +17,8 @@ permissions:
 
 jobs:
   stale:
+    if: ${{ github.repository == 'gomons/logseq-og' && github.actor == 'gomons' && github.triggering_actor == 'gomons' }}
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - name: '🧹 Mark & close stale issues'
